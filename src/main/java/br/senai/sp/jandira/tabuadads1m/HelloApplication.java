@@ -1,23 +1,24 @@
 package br.senai.sp.jandira.tabuadads1m;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.util.Optional;
 
 public class HelloApplication extends Application {
 
     TextField textFieldMultiplicando;
-    TextField textFieldmenormultiplicador;
+    TextField textFieldMenormultiplicador;
     TextField textFieldMaiorMultiplicador;
     ListView listaTabuada;
 
@@ -25,8 +26,19 @@ public class HelloApplication extends Application {
     public void start(Stage stage) throws IOException {
 
         // Definir o tamanho da tela
-        stage.setWidth(500);
-        stage.setHeight(500);
+        stage.setHeight(600);
+
+
+        //Controlando o fechamento ao clicar no fechar da janela
+        stage.setOnCloseRequest(
+                event -> {
+                    fechar();
+                    event.consume();
+                }
+        );
+
+        // Bloquear o redimensionamento da janela
+        stage.setResizable(false);
 
         // Componente principal da tela
         VBox root = new VBox();
@@ -45,18 +57,17 @@ public class HelloApplication extends Application {
         header.getChildren().add(labelTitulo);
         header.getChildren().add(labelSubTitulo);
 
-        // Criar o multiplicando
-        //HBox multiplicandoBox = new HBox(); cria uma coluna horizontal
-        //multiplicandoBox.setStyle("-fx-padding: 10;");
-        //multiplicandoBox.getChildren().add(labelMultiplicando);
         //multiplicandoBox.getChildren().add(textFieldMultiplicando);
         GridPane gridFormulario = new GridPane();
+        gridFormulario.setPadding(new Insets(20));
+        gridFormulario.setVgap(10);
+        gridFormulario.setHgap(10);
 
         Label labelMultiplicando = new Label("Multiplicando"); //adiciona a coluna de texto
         textFieldMultiplicando = new TextField(); //adiciona texto
 
         Label labelmenormultiplicador = new Label("Menor multiplicador");
-         textFieldmenormultiplicador = new TextField();
+         textFieldMenormultiplicador = new TextField();
 
         Label labelMaiorMultiplicador = new Label("Maior multiplicador");
          textFieldMaiorMultiplicador = new TextField();
@@ -65,30 +76,43 @@ public class HelloApplication extends Application {
         gridFormulario.add(textFieldMultiplicando, 1, 0);
 
         gridFormulario.add(labelmenormultiplicador, 0, 1);
-        gridFormulario.add(textFieldmenormultiplicador, 1, 1);
+        gridFormulario.add(textFieldMenormultiplicador, 1, 1);
 
         gridFormulario.add(labelMaiorMultiplicador, 0, 2);
         gridFormulario.add(textFieldMaiorMultiplicador, 1, 2);
 
         // Criar componentes de botões
         HBox boxBotoes = new HBox();
+        boxBotoes.setAlignment(Pos.CENTER_LEFT);
+        boxBotoes.setPadding(new Insets(0, 20, 20, 20));
+        boxBotoes.setSpacing(10);
         Button btnCalcular = new Button("Calcular");
+        btnCalcular.setPrefWidth(90);
+        btnCalcular.setPrefHeight(150);
         btnCalcular.setOnAction(e -> {
             calcularTabuada();
         });
 
-
         Button btnLimpar = new Button("Limpar");
+        btnLimpar.setPrefWidth(70);
+        btnLimpar.setPrefHeight(150);
         btnLimpar.setOnAction(e -> {
-            listaTabuada.getItems().clear();
+            limparFormulario();
         });
 
         Button btnSair = new Button("Sair");
+        btnSair.setPrefWidth(70);
+        btnSair.prefHeight(150);
+        btnSair.setOnAction(e -> {
+           fechar();
+        });
 
         // Adicionar um componentes ao ListView
         VBox boxResultado = new VBox();
+        boxResultado.setPadding(new Insets(0, 20, 20, 20));
+
         Label labelResultado = new Label("Resultado");
-        labelResultado.setStyle("-fx-text-fill: blue; -fx-font-size: 18; -fx-font-weight: Bold");
+        labelResultado.setStyle("-fx-text-fill: #ba4129; -fx-font-size: 18; -fx-font-weight: Bold");
 
         // Adicionar o componente o ListView
         listaTabuada = new ListView();
@@ -110,19 +134,41 @@ public class HelloApplication extends Application {
         stage.setTitle("Tabuada");
         stage.show();
     }
+
+    public void fechar() {
+        Alert alertaFechar = new Alert(
+                Alert.AlertType.CONFIRMATION,
+                "Confirma a saida do sistema?",
+                ButtonType.YES,
+                ButtonType.NO
+        );
+        Optional <ButtonType> resposta = alertaFechar.showAndWait();
+        if (resposta.isPresent() && resposta.get() == ButtonType.YES) {
+            Platform.exit();
+        }
+    }
+
+    public void limparFormulario(){
+        textFieldMultiplicando.setText("");
+        textFieldMenormultiplicador.setText("");
+        textFieldMaiorMultiplicador.setText("");
+        listaTabuada.getItems().clear();
+        textFieldMultiplicando.requestFocus();
+    }
+
     public void calcularTabuada() {
         int multiplicando = Integer.parseInt(textFieldMultiplicando.getText());
-        int menorMultiplicador = Integer.parseInt(textFieldmenormultiplicador.getText());
+        int menorMultiplicador = Integer.parseInt(textFieldMenormultiplicador.getText());
         int maiorMultiplicador = Integer.parseInt(textFieldMaiorMultiplicador.getText());
 
-        int tamanho = maiorMultiplicador-menorMultiplicador +1;
-        String[] tabuada = new String[tamanho];
-
         if (menorMultiplicador > maiorMultiplicador) {
-            int auxiliar = maiorMultiplicador;
-            maiorMultiplicador = menorMultiplicador;
-            menorMultiplicador = auxiliar;
+            int auxiliar = menorMultiplicador;
+            menorMultiplicador = maiorMultiplicador;
+            maiorMultiplicador = auxiliar;
         }
+
+        int tamanho = maiorMultiplicador - menorMultiplicador +1;
+        String[] tabuada = new String[tamanho];
 
         int contador = 0;
         while (contador < tamanho) {
